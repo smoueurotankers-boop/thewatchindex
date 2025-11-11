@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Dashboard – The Watch Index</title>
   <link rel="stylesheet" href="styles/styles.css" />
   <!-- Load Chart.js from CDN -->
@@ -21,6 +24,7 @@
   <div class="section">
     <h2>Current Watch Index</h2>
     <div id="lastUpdated" style="font-size:0.8rem; color:#888;"></div>
+    <button onclick="refreshData()" style="margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #d21313; color: white; border: none; border-radius: 4px; cursor: pointer;">Refresh Data</button>
     <div class="cards" id="cards"></div>
     <canvas id="shipChart" style="max-width: 100%; margin-top:2rem;"></canvas>
     <canvas id="regionChart" style="max-width: 100%; margin-top:2rem;"></canvas>
@@ -31,12 +35,17 @@
   <script>
     async function loadData() {
       try {
-        const res = await fetch('data/data.json?t=' + Date.now());
+        const cacheKey = Math.random().toString(36).substring(7);
+        const res = await fetch('data/data.json?v=' + cacheKey);
         const data = await res.json();
         renderMetrics(data);
       } catch (err) {
         console.error('Failed to load data:', err);
       }
+    }
+
+    function refreshData() {
+      loadData();
     }
 
     function renderMetrics(data) {
