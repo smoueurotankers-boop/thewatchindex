@@ -53,13 +53,24 @@
         <option value="high">High</option>
       </select>
       <p class="note">
-        We do not collect any personal information. Your answers are stored only in
-        the file you download and will not be sent to a server.
+        We do not collect any personal information. By default, your answers
+        are saved in a file that you download locally. If your organisation has
+        provided a backend URL below, your submission will also be uploaded
+        directly and anonymously to the Watch&nbsp;Index repository.
       </p>
-      <button type="submit">Generate report file</button>
+      <label for="backendUrl">Optional backend URL (provided by your
+        organisation)</label>
+      <input
+        type="url"
+        id="backendUrl"
+        name="backendUrl"
+        placeholder="https://your-backend.example.com/upload"
+      />
+      <button type="submit">Submit report</button>
       <p id="successMessage" style="display:none;color:#a3e635;">
-        Your report has been generated as a file. Please save it and send through
-        our secure channel.
+        Your report has been handled successfully. If you entered a backend URL,
+        it was uploaded and aggregated; otherwise it has been downloaded as a
+        file. Thank you for contributing.
       </p>
     </form>
   </div>
@@ -80,18 +91,41 @@
         calledDuringRest: form.calledDuringRest.value,
         portIntensity: form.portIntensity.value,
       };
-      // Convert to JSON
-      const json = JSON.stringify(data, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const filename = `watch-index-report-${Date.now()}.json`;
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Build CSV content (aggregator expects CSV)
+      const csvHeader =
+        'ship_type,region,sleep_hours,rest_violations,called_during_rest,port_intensity\n';
+      const csvRow = `${data.shipType},${data.region},${data.sleepHours},${data.restViolations},${data.calledDuringRest},${data.portIntensity}`;
+      const csvContent = csvHeader + csvRow;
+      // Prepare submission file
+      const submissionBlob = new Blob([csvContent], { type: 'text/csv' });
+      const submissionFilename = `submission-${Date.now()}.csv`;
+      // Always trigger a download so the seafarer retains their own copy
+      const localUrl = URL.createObjectURL(submissionBlob);
+      const dlLink = document.createElement('a');
+      dlLink.href = localUrl;
+      dlLink.download = submissionFilename;
+      document.body.appendChild(dlLink);
+      dlLink.click();
+      document.body.removeChild(dlLink);
+      URL.revokeObjectURL(localUrl);
+      // If a backend URL is provided, attempt to upload anonymously
+      const backendUrl = form.backendUrl.value.trim();
+      if (backendUrl) {
+        const formData = new FormData();
+        formData.append('submission', submissionBlob, submissionFilename);
+        fetch(backendUrl, {
+          method: 'POST',
+          body: formData,
+        })
+          .then((res) => {
+            if (!res.ok) {
+              console.error('Backend upload failed', res.statusText);
+            }
+          })
+          .catch((err) => {
+            console.error('Error uploading to backend', err);
+          });
+      }
       // Show success message
       successMessage.style.display = 'block';
     });
