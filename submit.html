@@ -54,6 +54,8 @@
         <option value="medium">Medium</option>
         <option value="high">High</option>
       </select>
+      <!-- Honeypot field (hidden from humans, visible to bots) -->
+      <input type="text" id="website" name="website" style="display:none;" tabindex="-1" autocomplete="off" />
       <p class="note">
         We do not collect any personal information. When you submit, your report will be sent
         directly and anonymously to the Watch&nbsp;Index backend for aggregation.
@@ -94,20 +96,37 @@
       // Automatically send to backend
       const formData = new FormData();
       formData.append('submission', submissionBlob, submissionFilename);
+      // Add honeypot field (should be empty for legitimate users)
+      formData.append('website', document.getElementById('website').value);
+      // Client-side validation
+      if (data.sleepHours < 0 || data.sleepHours > 24) {
+        alert('Sleep hours must be between 0 and 24');
+        return;
+      }
+      if (data.restViolations < 0 || data.restViolations > 50) {
+        alert('Rest violations must be between 0 and 50');
+        return;
+      }
+      
       fetch(BACKEND_URL, {
         method: 'POST',
         body: formData,
       })
         .then((res) => {
           if (!res.ok) {
-            console.error('Backend upload failed', res.statusText);
+            return res.json().then(data => {
+              throw new Error(data.error || 'Backend upload failed');
+            });
           }
+          // Show success message
+          successMessage.style.display = 'block';
+          // Reset form
+          form.reset();
         })
         .catch((err) => {
           console.error('Error uploading to backend', err);
+          alert('Submission failed: ' + err.message);
         });
-      // Show success message
-      successMessage.style.display = 'block';
     });
   </script>
 </body>
