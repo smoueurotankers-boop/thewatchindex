@@ -1,23 +1,23 @@
 {
   "totals": {
-    "submissions": 17
+    "submissions": 18
   },
   "averages": {
-    "sleepHours": 6.71,
-    "restViolations": 4.35
+    "sleepHours": 6.61,
+    "restViolations": 4.61
   },
   "byShip": {
     "Tanker": 13,
     "Container": 1,
-    "Gas": 1,
+    "Gas": 2,
     "tanker": 1,
     "bulk carrier": 1
   },
   "byRegion": {
     "Global": 13,
-    "Europe": 2,
+    "Europe": 3,
     "Middle East": 1,
     "Asia": 1
   },
-  "updatedAt": "2025-11-11T15:08:05.522710+00:00"
+  "updatedAt": "2025-11-11T17:38:33.148588+00:00"
 }
