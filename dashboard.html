@@ -18,6 +18,8 @@
       <li><a href="index.html">Home</a></li>
       <li><a href="submit.html">Submit</a></li>
       <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
     </ul>
   </nav>
 
@@ -26,8 +28,14 @@
     <div id="lastUpdated" style="font-size:0.8rem; color:#888;"></div>
     <button onclick="refreshData()" style="margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #d21313; color: white; border: none; border-radius: 4px; cursor: pointer;">Refresh Data</button>
     <div class="cards" id="cards"></div>
-    <canvas id="shipChart" style="max-width: 100%; margin-top:2rem;"></canvas>
-    <canvas id="regionChart" style="max-width: 100%; margin-top:2rem;"></canvas>
+    <h3 style="margin-top: 3rem;">Fatigue Trends Over Time</h3>
+    <canvas id="trendChart" style="max-width: 100%; margin-top:1rem; margin-bottom:2rem;"></canvas>
+    
+    <h3 style="margin-top: 2rem;">Submissions by Ship Type</h3>
+    <canvas id="shipChart" style="max-width: 100%; margin-top:1rem;"></canvas>
+    
+    <h3 style="margin-top: 2rem;">Submissions by Region</h3>
+    <canvas id="regionChart" style="max-width: 100%; margin-top:1rem;"></canvas>
   </div>
 
   <footer class="footer">© 2025 The Watch Index</footer>
@@ -67,6 +75,87 @@
         card.innerHTML = `<div class="card-title">${m.title}</div><div class="card-value">${m.value}</div>`;
         cards.appendChild(card);
       });
+      // Trend chart (line chart)
+      if (data.trends && data.trends.length > 0) {
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        new Chart(trendCtx, {
+          type: 'line',
+          data: {
+            labels: data.trends.map(t => t.date),
+            datasets: [
+              {
+                label: 'Avg Sleep Hours',
+                data: data.trends.map(t => t.avgSleep),
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                yAxisID: 'y',
+                tension: 0.3,
+              },
+              {
+                label: 'Avg Rest Violations',
+                data: data.trends.map(t => t.avgRestViolations),
+                borderColor: '#d21313',
+                backgroundColor: 'rgba(210, 19, 19, 0.1)',
+                yAxisID: 'y1',
+                tension: 0.3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            interaction: {
+              mode: 'index',
+              intersect: false,
+            },
+            plugins: {
+              legend: {
+                display: true,
+                labels: { color: '#e5e7eb' },
+              },
+              tooltip: {
+                callbacks: {
+                  title: function(context) {
+                    return 'Date: ' + context[0].label;
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                ticks: { color: '#e5e7eb' },
+                grid: { color: 'rgba(255,255,255,0.1)' },
+              },
+              y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                  display: true,
+                  text: 'Sleep Hours',
+                  color: '#3b82f6',
+                },
+                ticks: { color: '#3b82f6' },
+                grid: { color: 'rgba(255,255,255,0.1)' },
+              },
+              y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                  display: true,
+                  text: 'Rest Violations',
+                  color: '#d21313',
+                },
+                ticks: { color: '#d21313' },
+                grid: {
+                  drawOnChartArea: false,
+                },
+              },
+            },
+          },
+        });
+      }
+      
       // Bar chart by ship type
       const shipCtx = document.getElementById('shipChart').getContext('2d');
       new Chart(shipCtx, {
