@@ -1,0 +1,2 @@
+ship_type,region,sleep_hours,rest_violations,called_during_rest,port_intensity
+Tanker,Europe,8,9,yes,medium
