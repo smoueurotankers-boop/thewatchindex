@@ -1,0 +1,3 @@
+ship_type,region,sleep_hours,rest_violations,called_during_rest,port_intensity
+tanker,Europe,5,2,yes,high
+bulk carrier,Asia,6,1,no,medium
