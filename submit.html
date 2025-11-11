@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Submit Anonymous Report – Watch Index</title>
+  <link rel="stylesheet" href="styles/styles.css" />
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="brand">Watch Index</div>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="submit.html">Submit</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+    </ul>
+  </nav>
+
+  <div class="section">
+    <h2>Submit your fatigue report</h2>
+    <form id="reportForm" class="form">
+      <label for="shipType">Ship type</label>
+      <select id="shipType" name="shipType" required>
+        <option value="Tanker">Tanker</option>
+        <option value="Bulk">Bulk</option>
+        <option value="Container">Container</option>
+        <option value="Gas">Gas</option>
+        <option value="Other">Other</option>
+      </select>
+      <label for="region">Trading region</label>
+      <select id="region" name="region" required>
+        <option value="Global">Global</option>
+        <option value="Europe">Europe</option>
+        <option value="Middle East">Middle East</option>
+        <option value="Asia">Asia</option>
+        <option value="Africa">Africa</option>
+        <option value="Americas">Americas</option>
+      </select>
+      <label for="sleepHours">Sleep hours in last 24h</label>
+      <input type="number" id="sleepHours" name="sleepHours" min="0" max="24" placeholder="e.g. 5" required />
+      <label for="restViolations">Rest-hour breaches in last 7d</label>
+      <input type="number" id="restViolations" name="restViolations" min="0" max="14" placeholder="e.g. 2" required />
+      <label for="calledDuringRest">Called during rest?</label>
+      <select id="calledDuringRest" name="calledDuringRest" required>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+      <label for="portIntensity">Port operation intensity</label>
+      <select id="portIntensity" name="portIntensity" required>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+      <p class="note">
+        We do not collect any personal information. Your answers are stored only in
+        the file you download and will not be sent to a server.
+      </p>
+      <button type="submit">Generate report file</button>
+      <p id="successMessage" style="display:none;color:#a3e635;">
+        Your report has been generated as a file. Please save it and send through
+        our secure channel.
+      </p>
+    </form>
+  </div>
+
+  <footer class="footer">© 2025 The Watch Index</footer>
+
+  <script>
+    const form = document.getElementById('reportForm');
+    const successMessage = document.getElementById('successMessage');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      // Gather data
+      const data = {
+        shipType: form.shipType.value,
+        region: form.region.value,
+        sleepHours: Number(form.sleepHours.value),
+        restViolations: Number(form.restViolations.value),
+        calledDuringRest: form.calledDuringRest.value,
+        portIntensity: form.portIntensity.value,
+      };
+      // Convert to JSON
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const filename = `watch-index-report-${Date.now()}.json`;
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      // Show success message
+      successMessage.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
