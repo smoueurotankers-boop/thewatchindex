@@ -26,7 +26,8 @@
   <div class="section">
     <h2>Current Watch Index</h2>
     <div id="lastUpdated" style="font-size:0.8rem; color:#888;"></div>
-    <button onclick="refreshData()" style="margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #d21313; color: white; border: none; border-radius: 4px; cursor: pointer;">Refresh Data</button>
+    <div id="refreshStatus" style="font-size:0.75rem; color:#4ade80; margin-top:0.25rem; min-height:1rem;"></div>
+    <button id="refreshBtn" onclick="refreshData()" style="margin-bottom: 1rem; padding: 0.5rem 1rem; background-color: #d21313; color: white; border: none; border-radius: 4px; cursor: pointer; transition: all 0.3s ease;">Refresh Data</button>
     <div class="cards" id="cards"></div>
     <canvas id="shipChart" style="max-width: 100%; margin-top:2rem;"></canvas>
     <canvas id="regionChart" style="max-width: 100%; margin-top:2rem;"></canvas>
@@ -35,6 +36,9 @@
   <footer class="footer">© 2025 The Watch Index</footer>
 
   <script>
+    let shipChart = null;
+    let regionChart = null;
+
     async function loadData() {
       try {
         const cacheKey = Math.random().toString(36).substring(7);
@@ -43,11 +47,48 @@
         renderMetrics(data);
       } catch (err) {
         console.error('Failed to load data:', err);
+        showRefreshStatus('Failed to load data', false);
       }
     }
 
-    function refreshData() {
-      loadData();
+    async function refreshData() {
+      const btn = document.getElementById('refreshBtn');
+      const statusDiv = document.getElementById('refreshStatus');
+      
+      // Disable button and show loading state
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      btn.style.cursor = 'not-allowed';
+      btn.textContent = 'Refreshing...';
+      statusDiv.textContent = 'Fetching latest data...';
+      statusDiv.style.color = '#888';
+      
+      try {
+        await loadData();
+        // Show success message
+        showRefreshStatus('✓ Data refreshed successfully', true);
+      } catch (err) {
+        showRefreshStatus('✗ Refresh failed', false);
+      } finally {
+        // Re-enable button
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+          btn.textContent = 'Refresh Data';
+        }, 500);
+      }
+    }
+
+    function showRefreshStatus(message, success) {
+      const statusDiv = document.getElementById('refreshStatus');
+      statusDiv.textContent = message;
+      statusDiv.style.color = success ? '#4ade80' : '#f87171';
+      
+      // Clear message after 3 seconds
+      setTimeout(() => {
+        statusDiv.textContent = '';
+      }, 3000);
     }
 
     // Auto-refresh data every 30 seconds
@@ -70,9 +111,17 @@
         cards.appendChild(card);
       });
       
+      // Destroy existing charts before creating new ones
+      if (shipChart) {
+        shipChart.destroy();
+      }
+      if (regionChart) {
+        regionChart.destroy();
+      }
+
       // Bar chart by ship type
       const shipCtx = document.getElementById('shipChart').getContext('2d');
-      new Chart(shipCtx, {
+      shipChart = new Chart(shipCtx, {
         type: 'bar',
         data: {
           labels: Object.keys(data.byShip),
@@ -102,7 +151,7 @@
       });
       // Bar chart by region
       const regionCtx = document.getElementById('regionChart').getContext('2d');
-      new Chart(regionCtx, {
+      regionChart = new Chart(regionCtx, {
         type: 'bar',
         data: {
           labels: Object.keys(data.byRegion),
