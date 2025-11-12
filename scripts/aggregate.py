@@ -68,9 +68,9 @@ def aggregate_submissions(submissions_path: Path) -> dict:
                     daily_data[submission_date]["sleep_sum"] += sleep
                     daily_data[submission_date]["rest_sum"] += rest
                 
-                # Tally by ship and region
-                ship = row['ship_type'].strip()
-                region = row['region'].strip()
+                # Tally by ship and region (normalize to title case)
+                ship = row['ship_type'].strip().title()
+                region = row['region'].strip().title()
                 by_ship[ship] = by_ship.get(ship, 0) + 1
                 by_region[region] = by_region.get(region, 0) + 1
     
